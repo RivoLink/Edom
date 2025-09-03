@@ -1,8 +1,8 @@
 /*!
- * Fleet v1.1.2
+ * Fleet v1.2.0
  * https://github.com/RivoLink/fleet
  *
- * Date: 2025-04-18T22:50Z 
+ * Date: 2025-09-03T20:20Z 
  */
 (function (global, factory) {
 
@@ -450,6 +450,43 @@
         }
 
         /**
+         * Perform an AJAX POST request and send FormData (multipart/form-data).
+         * @param {string} url - The URL to send the request to
+         * @param {string} token - The Bearer token for authorization
+         * @param {FormData} data - The FormData to send
+         * @param {Function(result, data)} onSuccess - The callback function to handle success response
+         * @param {Function(data)} onError - The callback function to handle error response
+         */
+        formPost(url, token, data, onSuccess, onError) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', url, true);
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+            xhr.onload = () => {onSuccess(this.$json(xhr.responseText), data)};
+            xhr.onerror = () => {onError(data)};
+            xhr.send(data);
+        }
+
+        /**
+         * Perform an AJAX POST request and send JSON data.
+         * @param {string} url - The URL to send the request to
+         * @param {string} token - The Bearer token for authorization
+         * @param {object} data - The data to send
+         * @param {Function(result, data)} onSuccess - The callback function to handle success response
+         * @param {Function(data)} onError - The callback function to handle error response
+         */
+        jsonPost(url, token, data, onSuccess, onError) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', url, true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+            xhr.onload = () => {onSuccess(this.$json(xhr.responseText), data)};
+            xhr.onerror = () => {onError(data)};
+            xhr.send(JSON.stringify(data));
+        }
+
+        /**
+         * @deprecated Use `jsonPost()` instead. Will be removed in v1.3.0.
+         *
          * Perform an AJAX POST request and send JSON data.
          * @param {string} url - The URL to send the request to
          * @param {string} token - The Bearer token for authorization
@@ -458,13 +495,12 @@
          * @param {Function(data)} onError - The callback function to handle error response
          */
         ajaxPost(url, token, data, onSuccess, onError) {
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', url, true);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-            xhr.onload = () => {onSuccess(this.$json(xhr.responseText), data)};
-            xhr.onerror = () => {onError(data)};
-            xhr.send(JSON.stringify(data));
+            if (!this.__warned_ajaxPost) {
+                console.warn('[DEPRECATED] ajaxPost() is deprecated. Use jsonPost() instead.');
+                this.__warned_ajaxPost = true;
+            }
+
+            this.jsonPost(url, token, data, onSuccess, onError);
         }
 
         /**
